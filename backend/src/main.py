@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.routes import auth_router
 from books.routes import book_router
 from reviews.routes import review_router
+from tags.routes import tags_router
 from conf.database import get_db, init_db
 from src.auth.middleware import register_middleware
 
@@ -58,10 +59,8 @@ async def read_root(db: AsyncSession = Depends(get_db)):
 
 
 # Include the router
+app.include_router(book_router, prefix=f"{version_prefix}/books", tags=["books"])
 app.include_router(auth_router, prefix=f"{version_prefix}/auth", tags=["auth"])
+app.include_router(review_router, prefix=f"{version_prefix}/reviews", tags=["reviews"])
+app.include_router(tags_router, prefix=f"{version_prefix}/tags", tags=["tags"])
 
-app.include_router(book_router, prefix=f"{
-                   version_prefix}/books", tags=["books"])
-
-app.include_router(review_router, prefix=f"{
-                   version_prefix}/reviews", tags=["reviews"])
