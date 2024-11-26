@@ -5,8 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.conf.database import get_db
 from src.conf.redis import add_jti_to_blocklist
 from src.conf.celery_tasks import send_email
-from src.conf.config import Config
-
+from src.conf.config import settings
 from .dependencies import (
     AccessTokenBearer,
     RefreshTokenBearer,
@@ -68,7 +67,7 @@ async def create_user_account(
 
     new_user = await user_service.create_user(user_data, session)
     token = create_url_safe_token({"email": email})
-    verification_link = f"http://{Config.DOMAIN}/api/v1/auth/verify/{token}"
+    verification_link = f"http://{settings.DOMAIN}/api/v1/auth/verify/{token}"
 
     html = f"""
     <h1>Verify Your Email</h1>
@@ -183,7 +182,7 @@ async def password_reset_request(email_data: PasswordResetRequestModel):
     Request a password reset for a user account.
     """
     token = create_url_safe_token({"email": email_data.email})
-    reset_link = f"http://{Config.DOMAIN}/api/v1/auth/password-reset-confirm/{token}"
+    reset_link = f"http://{settings.DOMAIN}/api/v1/auth/password-reset-confirm/{token}"
 
     html = f"""
     <h1>Reset Your Password</h1>

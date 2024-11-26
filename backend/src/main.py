@@ -1,8 +1,11 @@
 from sqlalchemy import text
 from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-# from books.routes import book_router
+from auth.routes import auth_router
+from books.routes import book_router
+from reviews.routes import review_router
 from conf.database import get_db, init_db
+from src.auth.middleware import register_middleware
 
 version = "v1"
 
@@ -34,6 +37,8 @@ app = FastAPI(
     redoc_url=f"{version_prefix}/redoc",
 )
 
+register_middleware(app)
+
 
 @app.on_event("startup")
 async def on_startup():
@@ -52,7 +57,11 @@ async def read_root(db: AsyncSession = Depends(get_db)):
         return {"message": "Database connection failed", "error": str(e)}
 
 
-# Include the book router
-# app.include_router(book_router, prefix=f"{
-#                    version_prefix}/books", tags=["books"])
+# Include the router
+app.include_router(auth_router, prefix=f"{version_prefix}/auth", tags=["auth"])
 
+app.include_router(book_router, prefix=f"{
+                   version_prefix}/books", tags=["books"])
+
+app.include_router(review_router, prefix=f"{
+                   version_prefix}/reviews", tags=["reviews"])

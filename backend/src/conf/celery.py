@@ -1,20 +1,17 @@
-# celery.py
 from celery import Celery
-from .config import Config
+from .config import settings
 
 # Initialize Celery instance
 celery_app = Celery(
-    "worker",  # Name of the worker
-    # Redis connection URL
-    broker=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}",
-    # Optional result backend
-    backend=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}",
+    "worker",
+    broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
+    backend=f"redis://{settings.REDIS_HOST}:{
+        settings.REDIS_PORT}/{settings.REDIS_DB}",
 )
 
 celery_app.conf.update(
     task_routes={
-        # Example of routing tasks to different queues
-        'src.celery_tasks.*': {'queue': 'default'},
+        'src.tasks.*': {'queue': 'default'},
     }
 )
 

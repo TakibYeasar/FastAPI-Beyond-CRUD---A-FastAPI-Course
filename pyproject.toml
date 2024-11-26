@@ -24,6 +24,9 @@ itsdangerous = "^2.2.0"
 aioredis = "^2.0.1"
 redis = {extras = ["asyncio"], version = "^5.2.0"}
 celery = {extras = ["redis"], version = "^5.4.0"}
+fastapi-mail = "^1.4.2"
+asgiref = "^3.8.1"
+flower = "^2.0.1"
 
 
 [build-system]

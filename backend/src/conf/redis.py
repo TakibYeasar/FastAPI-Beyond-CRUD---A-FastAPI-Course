@@ -1,11 +1,11 @@
 import redis.asyncio as aioredis
-from .config import Config
+from .config import settings
 
 # Expiry time for JTI in seconds
 JTI_EXPIRY = 3600
 
 # Initialize Redis client
-token_blocklist = aioredis.from_url(Config.REDIS_URL, decode_responses=True)
+token_blocklist = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
 
 
 async def add_jti_to_blocklist(jti: str) -> None:
