@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from typing import List, TYPE_CHECKING
-
 import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Column, Field, Relationship, SQLModel
 
