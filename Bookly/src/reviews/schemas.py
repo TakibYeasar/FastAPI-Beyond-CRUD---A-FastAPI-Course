@@ -23,3 +23,4 @@ class ReviewCreateModel(BaseModel):
 
     class Config:
         orm_mode = True  # This allows Pydantic to read data from SQLAlchemy models
+
