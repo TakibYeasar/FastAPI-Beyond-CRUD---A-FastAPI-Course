@@ -41,11 +41,15 @@ class Book(SQLModel, table=True):
         pg.TIMESTAMP, onupdate=datetime.utcnow))
 
     # Relationships
-    user: Optional["User"] = Relationship(back_populates="books")
+    user: Optional["User"] = Relationship(
+        back_populates="books", sa_relationship_kwargs={"lazy": "selectin"}
+    )
     reviews: List["Review"] = Relationship(
-        back_populates="book", sa_relationship_kwargs={"lazy": "selectin"})
+        back_populates="book", sa_relationship_kwargs={"lazy": "selectin"}
+    )
     tags: List["Tag"] = Relationship(
-        link_model=BookTag, back_populates="book", sa_relationship_kwargs={"lazy": "selectin"})
+        link_model=BookTag, back_populates="book", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
     def __repr__(self) -> str:
         return f"<Book {self.title}>"

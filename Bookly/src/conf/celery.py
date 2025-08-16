@@ -4,9 +4,9 @@ from .config import settings
 # Initialize Celery instance
 celery_app = Celery(
     "worker",
-    broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
-    backend=f"redis://{settings.REDIS_HOST}:{
-        settings.REDIS_PORT}/{settings.REDIS_DB}",
+    # broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
+    # backend=f"redis://{settings.REDIS_HOST}:{
+    #     settings.REDIS_PORT}/{settings.REDIS_DB}",
 )
 
 celery_app.conf.update(

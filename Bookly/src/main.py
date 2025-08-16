@@ -1,12 +1,12 @@
 from sqlalchemy import text
 from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-# from auth.routes import auth_router
+from auth.routes import auth_router
 # from books.routes import book_router
 # from reviews.routes import review_router
 # from tags.routes import tags_router
 from conf.database import get_db, init_db
-# from auth.middleware import register_middleware
+from auth.middleware import register_middleware
 
 # Define the API version
 API_VERSION = "v1"
@@ -43,7 +43,7 @@ app = FastAPI(
 )
 
 # Register middleware
-# register_middleware(app)
+register_middleware(app)
 
 
 @app.on_event("startup")
@@ -66,10 +66,10 @@ async def read_root(db: AsyncSession = Depends(get_db)):
 
 
 # Include routers for modular endpoints
+app.include_router(auth_router, prefix=f"{
+                   VERSION_PREFIX}/auth", tags=["Authentication"])
 # app.include_router(book_router, prefix=f"{
 #                    VERSION_PREFIX}/books", tags=["Books"])
-# app.include_router(auth_router, prefix=f"{
-#                    VERSION_PREFIX}/auth", tags=["Authentication"])
 # app.include_router(review_router, prefix=f"{
 #                    VERSION_PREFIX}/reviews", tags=["Reviews"])
 # app.include_router(tags_router, prefix=f"{VERSION_PREFIX}/tags", tags=["Tags"])

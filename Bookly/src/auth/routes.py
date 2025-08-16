@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, status, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
-from src.conf.database import get_db
-from src.conf.redis import add_jti_to_blocklist
-from src.conf.celery_tasks import send_email
-from src.conf.config import settings
+from conf.database import get_db
+from conf.redis import add_jti_to_blocklist
+from conf.celery_tasks import send_email
+from conf.config import settings
 from .dependencies import (
     AccessTokenBearer,
     RefreshTokenBearer,
@@ -18,17 +18,17 @@ from .schemas import (
     PasswordResetRequestModel,
     PasswordResetConfirmModel,
 )
-from .services import UserService
+from .services import AuthService
 from .utils import (
     create_access_token,
     verify_password,
-    generate_passwd_hash,
+    generate_password_hash,
     create_url_safe_token,
     decode_url_safe_token,
 )
 
 auth_router = APIRouter()
-user_service = UserService()
+auth_service = AuthService()
 role_checker = RoleChecker(["admin", "user"])
 
 REFRESH_TOKEN_EXPIRY_DAYS = 2
@@ -50,7 +50,7 @@ async def send_mail(emails: EmailModel):
     )
 
 
-@auth_router.post("/signup", status_code=status.HTTP_201_CREATED, summary="User Signup")
+@auth_router.post("/sign-up", status_code=status.HTTP_201_CREATED, summary="User Signup")
 async def create_user_account(
     user_data: UserCreateModel,
     bg_tasks: BackgroundTasks,
@@ -60,12 +60,12 @@ async def create_user_account(
     Create a new user account and send a verification email.
     """
     email = user_data.email
-    if await user_service.user_exists(email, session):
+    if await auth_service.user_exists(email, session):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists."
         )
 
-    new_user = await user_service.create_user(user_data, session)
+    new_user = await auth_service.create_user(user_data, session)
     token = create_url_safe_token({"email": email})
     verification_link = f"http://{settings.DOMAIN}/api/v1/auth/verify/{token}"
 
@@ -95,13 +95,13 @@ async def verify_user_account(token: str, session: AsyncSession = Depends(get_db
                 detail="Invalid token: email not found.",
             )
 
-        user = await user_service.get_user_by_email(user_email, session)
+        user = await auth_service.get_user_by_email(user_email, session)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
             )
 
-        await user_service.update_user(user, {"is_verified": True}, session)
+        await auth_service.update_user(user, {"is_verified": True}, session)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"message": "Account verified successfully"},
@@ -112,14 +112,14 @@ async def verify_user_account(token: str, session: AsyncSession = Depends(get_db
         )
 
 
-@auth_router.post("/login", summary="User Login")
+@auth_router.post("/sign-in", summary="User Sign In")
 async def login_users(
     login_data: UserLoginModel, session: AsyncSession = Depends(get_db)
 ):
     """
     Authenticate user and return access and refresh tokens.
     """
-    user = await user_service.get_user_by_email(login_data.email, session)
+    user = await auth_service.get_user_by_email(login_data.email, session)
     if user and verify_password(login_data.password, user.password_hash):
         access_token = create_access_token(
             user_data={
@@ -213,14 +213,14 @@ async def reset_account_password(
     try:
         token_data = decode_url_safe_token(token)
         user_email = token_data.get("email")
-        user = await user_service.get_user_by_email(user_email, session)
+        user = await auth_service.get_user_by_email(user_email, session)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
             )
 
-        passwd_hash = generate_passwd_hash(passwords.new_password)
-        await user_service.update_user(user, {"password_hash": passwd_hash}, session)
+        passwd_hash = generate_password_hash(passwords.new_password)
+        await auth_service.update_user(user, {"password_hash": passwd_hash}, session)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"message": "Password reset successfully"},

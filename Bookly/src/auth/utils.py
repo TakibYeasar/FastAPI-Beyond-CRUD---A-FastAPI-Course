@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 import jwt
 from passlib.context import CryptContext
 from itsdangerous import URLSafeTimedSerializer
-from src.conf.config import Config
+from conf.config import settings
 
 # Initialize password hashing context
 passwd_context = CryptContext(schemes=["bcrypt"])
@@ -45,8 +45,8 @@ def create_access_token(
 
     return jwt.encode(
         payload=payload,
-        key=Config.JWT_SECRET,
-        algorithm=Config.JWT_ALGORITHM,
+        key=settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM,
     )
 
 
@@ -57,8 +57,8 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         return jwt.decode(
             jwt=token,
-            key=Config.JWT_SECRET,
-            algorithms=[Config.JWT_ALGORITHM],
+            key=settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM],
         )
     except jwt.ExpiredSignatureError:
         logging.error("Token has expired.")
@@ -72,7 +72,7 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
 
 # Initialize serializer for generating URL-safe tokens
 serializer = URLSafeTimedSerializer(
-    secret_key=Config.JWT_SECRET,
+    secret_key=settings.JWT_SECRET,
     salt="email-configuration",
 )
 

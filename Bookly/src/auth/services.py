@@ -2,24 +2,23 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from .models import User
 from .schemas import UserCreateModel
-from .utils import generate_passwd_hash
+from .utils import generate_password_hash
 
-
-class UserService:
-    async def get_user_by_email(self, email: str, session: AsyncSession) -> User | None:
-        """
-        Retrieve a user by their email address.
-        """
+class AuthService:
+    async def get_user_by_email(self, email: str, session: AsyncSession):
         statement = select(User).where(User.email == email)
-        result = await session.exec(statement)
-        return result.first()
 
-    async def user_exists(self, email: str, session: AsyncSession) -> bool:
-        """
-        Check if a user with the given email exists.
-        """
-        return bool(await self.get_user_by_email(email, session))
+        result = await session.execute(statement)
 
+        user = result.first()
+
+        return user
+
+    async def user_exists(self, email, session: AsyncSession):
+        user = await self.get_user_by_email(email, session)
+
+        return True if user is not None else False
+    
     async def create_user(self, user_data: UserCreateModel, session: AsyncSession) -> User:
         """
         Create a new user in the database.
@@ -28,7 +27,7 @@ class UserService:
         new_user = User(**user_data_dict)
 
         # Hash the password and set default role.
-        new_user.password_hash = generate_passwd_hash(
+        new_user.password_hash = generate_password_hash(
             user_data_dict["password"])
         new_user.role = "user"
 

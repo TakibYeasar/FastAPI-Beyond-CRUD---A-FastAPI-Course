@@ -3,13 +3,13 @@ from fastapi import Depends, Request, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel.ext.asyncio.session import AsyncSession
-from src.conf.database import get_db
+from conf.database import get_db
 from .models import User
-from src.conf.redis import token_in_blocklist
-from .services import UserService
+from conf.redis import token_in_blocklist
+from .services import AuthService
 from .utils import decode_token
 
-user_service = UserService()
+auth_service = AuthService()
 
 
 class TokenBearer(HTTPBearer):
@@ -100,7 +100,7 @@ async def get_current_user(
     """
     user_email = token_details["user"]["email"]
 
-    user = await user_service.get_user_by_email(user_email, session)
+    user = await auth_service.get_user_by_email(user_email, session)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
